@@ -1,0 +1,1233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wildcat Sky Watchers - Ogden, UT Sun & Moon Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: 'Fredoka', cursive, sans-serif;
+      user-select: none;
+      -webkit-user-select: none;
+      background-color: #0c101d;
+    }
+    .font-num {
+      font-family: 'Nunito', sans-serif;
+    }
+
+    /* Textured paper card effect */
+    .paper-texture {
+      background-color: #121829;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 0);
+      background-size: 16px 16px;
+    }
+
+    /* Time range slider */
+    input[type=range]::-webkit-slider-thumb {
+      height: 28px;
+      width: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fde047 35%, #eab308 100%);
+      cursor: pointer;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+      -webkit-appearance: none;
+      margin-top: -8px;
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 28px;
+      width: 28px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #fde047 35%, #eab308 100%);
+      cursor: pointer;
+      border: 3px solid #ffffff;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      height: 12px;
+      background: linear-gradient(to right, #090e1c 0%, #312e81 18%, #38bdf8 38%, #60a5fa 50%, #f97316 80%, #090e1c 100%);
+      border-radius: 8px;
+    }
+
+    .stage-frame {
+      border: 3px solid #4a3b63;
+      box-shadow: inset 0 0 16px rgba(0,0,0,0.4), 0 12px 32px rgba(0,0,0,0.6);
+    }
+  </style>
+</head>
+<body class="text-slate-100 min-h-screen p-2 sm:p-4 flex flex-col justify-between">
+
+  <!-- TOP HEADER -->
+  <header class="max-w-6xl w-full mx-auto bg-gradient-to-r from-purple-950 via-slate-900 to-indigo-950 rounded-3xl p-3 sm:p-4 shadow-2xl border-2 border-purple-500/40 flex flex-wrap items-center justify-between gap-3 mb-3">
+    <div class="flex items-center space-x-3">
+      <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-purple-900/90 border-2 border-purple-400 p-2 shadow-inner flex items-center justify-center transform -rotate-3">
+        <span class="text-3xl">🐾</span>
+      </div>
+      <div>
+        <div class="flex items-center space-x-2">
+          <span class="bg-purple-600 text-purple-100 text-[10px] sm:text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">Weber State University</span>
+          <span class="bg-amber-500/20 text-amber-300 border border-amber-400/30 text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full">Ogden, UT • 41.19° N</span>
+        </div>
+        <h1 class="text-xl sm:text-2xl font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-purple-200 to-white">
+          Wildcat Sky Watchers: Sun & Moon Tracker
+        </h1>
+      </div>
+    </div>
+
+    <!-- Live Ogden Time Sync Button -->
+    <div class="flex items-center space-x-2">
+      <button onclick="syncOgdenLiveTime()" class="bg-purple-800/80 hover:bg-purple-700 border-2 border-purple-400/50 text-white px-3.5 py-2 rounded-2xl text-xs sm:text-sm font-bold flex items-center space-x-1.5 shadow-lg active:scale-95 transition">
+        <i data-lucide="clock" class="w-4 h-4 text-amber-300"></i>
+        <span>Live Ogden Sky</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN APP GRID -->
+  <main class="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-3 sm:gap-4">
+
+    <!-- LEFT 8 COLS: WATERCOLOR CANVAS STAGE & CONTROLS -->
+    <div class="lg:col-span-8 flex flex-col space-y-3">
+
+      <!-- View Selector Tabs -->
+      <div class="bg-slate-900/95 rounded-2xl p-2 shadow-lg border border-slate-800 flex flex-wrap gap-1.5 justify-between items-center">
+        <span class="text-xs font-black text-slate-300 flex items-center px-1">
+          <i data-lucide="compass" class="w-4 h-4 mr-1 text-purple-400"></i> Skyline View:
+        </span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-1.5 w-full sm:w-auto">
+          <button onclick="setView('east')" id="btnView-east" class="view-btn px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1 bg-purple-600 text-white shadow border border-purple-400 transition active:scale-95">
+            <span>⛰️</span><span>East: Mt Ogden ('W')</span>
+          </button>
+          <button onclick="setView('south')" id="btnView-south" class="view-btn px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1 bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750 transition active:scale-95">
+            <span>🏛️</span><span>South: Bell Tower</span>
+          </button>
+          <button onclick="setView('west')" id="btnView-west" class="view-btn px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1 bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750 transition active:scale-95">
+            <span>🚏</span><span>West: Transit & Lake</span>
+          </button>
+          <button onclick="setView('north')" id="btnView-north" class="view-btn px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1 bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750 transition active:scale-95">
+            <span>🏢</span><span>North: McKay Plaza</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN WATERCOLOR STAGE CONTAINER -->
+      <div class="relative rounded-3xl overflow-hidden shadow-2xl stage-frame bg-slate-950 flex flex-col justify-between select-none">
+        
+        <!-- Live Badges Header inside sky -->
+        <div class="absolute top-2 left-2 right-2 z-40 flex items-center justify-between pointer-events-none">
+          <div class="bg-slate-950/80 backdrop-blur-md text-white px-3 py-1 rounded-full text-xs font-bold flex items-center space-x-2 border border-white/20 shadow">
+            <span id="skyPhaseEmoji">☀️</span>
+            <span id="skyPhaseLabel">Clear Morning</span>
+            <span class="text-slate-500">|</span>
+            <span id="sunAltitudeLabel" class="text-amber-300 font-num">Alt: 42°</span>
+          </div>
+
+          <div class="bg-purple-950/85 backdrop-blur-md text-purple-200 px-3 py-1 rounded-full text-xs font-bold border border-purple-400/40 shadow flex items-center space-x-1.5">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-amber-400"></i>
+            <span id="viewLocationTitle">East • Mount Ogden (9,572 ft)</span>
+          </div>
+        </div>
+
+        <!-- SVG WATERCOLOR SKY ENGINE (800x480 VIEWBOX) -->
+        <svg id="watercolorCanvas" class="w-full h-[360px] sm:h-[430px]" viewBox="0 0 800 480" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <!-- Dynamic Sky Gradients -->
+            <linearGradient id="skyGradDay" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#3b82f6"/>
+              <stop offset="45%" stop-color="#93c5fd"/>
+              <stop offset="80%" stop-color="#dbeafe"/>
+              <stop offset="100%" stop-color="#fef3c7"/>
+            </linearGradient>
+
+            <linearGradient id="skyGradSunset" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1e1b4b"/>
+              <stop offset="30%" stop-color="#6b21a8"/>
+              <stop offset="60%" stop-color="#c2410c"/>
+              <stop offset="85%" stop-color="#ea580c"/>
+              <stop offset="100%" stop-color="#fde047"/>
+            </linearGradient>
+
+            <linearGradient id="skyGradNight" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#020617"/>
+              <stop offset="50%" stop-color="#0f172a"/>
+              <stop offset="100%" stop-color="#1e1b4b"/>
+            </linearGradient>
+
+            <linearGradient id="skyGradOvercast" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#475569"/>
+              <stop offset="50%" stop-color="#64748b"/>
+              <stop offset="100%" stop-color="#cbd5e1"/>
+            </linearGradient>
+
+            <!-- Celestial Radiance Gradients -->
+            <radialGradient id="sunWatercolorCorona" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="1"/>
+              <stop offset="30%" stop-color="#fef08a" stop-opacity="0.9"/>
+              <stop offset="65%" stop-color="#f59e0b" stop-opacity="0.5"/>
+              <stop offset="100%" stop-color="#ea580c" stop-opacity="0"/>
+            </radialGradient>
+
+            <radialGradient id="moonGlowGrad" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95"/>
+              <stop offset="45%" stop-color="#e2e8f0" stop-opacity="0.7"/>
+              <stop offset="85%" stop-color="#94a3b8" stop-opacity="0.2"/>
+              <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+            </radialGradient>
+          </defs>
+
+          <!-- 1. BACKSTAGE DYNAMIC SKY RECTANGLE -->
+          <rect id="skyRect" x="0" y="0" width="800" height="480" fill="url(#skyGradDay)"/>
+
+          <!-- 2. STARFIELD LAYER (Renders at dusk/night) -->
+          <g id="starsLayer" opacity="0" class="transition-opacity duration-700">
+            <g id="starDotsGroup"></g>
+            <path d="M 0 100 Q 250 80 500 160 T 800 120" stroke="#c084fc" stroke-width="50" fill="none" opacity="0.15" filter="blur(16px)"/>
+          </g>
+
+          <!-- 3. CELESTIAL SUN & MOON PATHWAY TRAJECTORY -->
+          <g id="sunPathVisualizer"></g>
+
+          <!-- 4. WATERCOLOR SUN DISC -->
+          <g id="sunDiscGroup" class="transition-transform duration-150">
+            <circle cx="0" cy="0" r="68" fill="url(#sunWatercolorCorona)"/>
+            <circle cx="0" cy="0" r="30" fill="#fef08a" opacity="0.9"/>
+            <circle cx="0" cy="0" r="16" fill="#ffffff" opacity="0.98"/>
+          </g>
+
+          <!-- 5. WATERCOLOR MOON & DYNAMIC PHASES -->
+          <g id="moonDiscGroup" class="transition-transform duration-150">
+            <circle cx="0" cy="0" r="44" fill="url(#moonGlowGrad)"/>
+            <circle id="moonBaseCircle" cx="0" cy="0" r="20" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5"/>
+            <circle cx="-5" cy="-4" r="5" fill="#94a3b8" opacity="0.45"/>
+            <circle cx="4" cy="4" r="6" fill="#94a3b8" opacity="0.4"/>
+            <path id="moonShadowPath" d="" fill="#0b1120" opacity="0.94"></path>
+          </g>
+
+          <!-- 6. CLOUD LAYERS & PRECIPITATION FX -->
+          <g id="cloudsLayer">
+            <g id="cloudPuffsGroup" opacity="0.85"></g>
+          </g>
+          <g id="weatherParticlesLayer" opacity="0"></g>
+
+          <!-- 7. THE 4 WATERCOLOR SKYLINE VIEWS (TRUE ILLUSTRATION ART) -->
+          <!-- Using mix-blend-mode: multiply so the sky's light washes shine through the paper organically -->
+          <g id="skylineViewsMount">
+
+            <!-- ================= VIEW 1: EAST (Mount Ogden & Hillside 'W') ================= -->
+            <g id="viewSkyline-east" class="view-layer transition-opacity duration-500">
+              <image href="skyline-east.jpg" x="0" y="40" width="800" height="440" 
+                     preserveAspectRatio="xMidYMid slice" style="mix-blend-mode: multiply;" />
+            </g>
+
+            <!-- ================= VIEW 2: SOUTH (Stewart Bell Tower & Plaza) ================= -->
+            <g id="viewSkyline-south" class="view-layer transition-opacity duration-500 opacity-0 pointer-events-none">
+              <image href="skyline-south.jpg" x="0" y="40" width="800" height="440" 
+                     preserveAspectRatio="xMidYMid slice" style="mix-blend-mode: multiply;" />
+            </g>
+
+            <!-- ================= VIEW 3: WEST (Transit Canopy & Lake Overlook) ================= -->
+            <g id="viewSkyline-west" class="view-layer transition-opacity duration-500 opacity-0 pointer-events-none">
+              <image href="skyline-west.jpg" x="0" y="40" width="800" height="440" 
+                     preserveAspectRatio="xMidYMid slice" style="mix-blend-mode: multiply;" />
+            </g>
+
+            <!-- ================= VIEW 4: NORTH (David O. McKay Education Building) ================= -->
+            <g id="viewSkyline-north" class="view-layer transition-opacity duration-500 opacity-0 pointer-events-none">
+              <image href="skyline-north.jpg" x="0" y="40" width="800" height="440" 
+                     preserveAspectRatio="xMidYMid slice" style="mix-blend-mode: multiply;" />
+            </g>
+
+          </g>
+
+          <!-- 8. GROUND HORIZON RULER & CARDINAL BAR -->
+          <g id="groundHudBar" transform="translate(0, 444)">
+            <rect x="0" y="0" width="800" height="36" fill="#0f172a" opacity="0.96"/>
+            <line x1="0" y1="0" x2="800" y2="0" stroke="#7e22ce" stroke-width="2"/>
+            <text id="groundLeftCardinal" x="25" y="23" fill="#cbd5e1" font-size="11" font-weight="bold">🌄 NORTHEAST (Ogden Canyon)</text>
+            <text id="groundCenterCampus" x="400" y="23" fill="#fde047" font-size="12" font-weight="900" text-anchor="middle">WEBER STATE UNIVERSITY CAMPUS</text>
+            <text id="groundRightCardinal" x="775" y="23" fill="#cbd5e1" font-size="11" font-weight="bold" text-anchor="end">SOUTHEAST (Wasatch Bench) 🌲</text>
+          </g>
+        </svg>
+
+      </div>
+
+      <!-- 24-HOUR VISUAL TIME SCRUBBER & FIRST-GRADE ROUTINES -->
+      <div class="bg-slate-900/95 rounded-3xl p-3 sm:p-4 shadow-xl border border-slate-800 flex flex-col space-y-3">
+        
+        <!-- Live Time Display & Controls -->
+        <div class="flex flex-wrap items-center justify-between gap-2.5">
+          <div class="flex items-center space-x-3">
+            <div id="clockEmojiBadge" class="w-12 h-12 rounded-2xl bg-amber-500/20 border-2 border-amber-400/40 text-amber-300 flex items-center justify-center text-2xl shadow">
+              ☀️
+            </div>
+            <div>
+              <div class="flex items-baseline space-x-2">
+                <span id="digitalClockTime" class="text-2xl sm:text-3xl font-black text-white font-num tracking-tight">8:30 AM</span>
+                <span id="routineBadgeText" class="bg-amber-400/20 text-amber-300 border border-amber-400/30 font-black text-xs px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                  Morning School Bell
+                </span>
+              </div>
+              <p id="kidActivityDesc" class="text-xs text-slate-400 font-semibold">Morning meeting and circle time with teacher & friends at Weber State!</p>
+            </div>
+          </div>
+
+          <!-- Play / Pause & Speed Toggle -->
+          <div class="flex items-center space-x-2">
+            <div class="bg-slate-800 p-1 rounded-2xl border border-slate-700 flex space-x-1">
+              <button onclick="setPlaySpeed(1)" id="spdBtn-1" class="px-2 py-1 text-xs font-black rounded-xl bg-purple-600 text-white">1x</button>
+              <button onclick="setPlaySpeed(10)" id="spdBtn-10" class="px-2 py-1 text-xs font-black rounded-xl text-slate-400 hover:text-white">10x</button>
+              <button onclick="setPlaySpeed(60)" id="spdBtn-60" class="px-2 py-1 text-xs font-black rounded-xl text-slate-400 hover:text-white">60x</button>
+            </div>
+            <button id="btnPlaySky" onclick="togglePlayAnimation()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center space-x-1.5 shadow-lg border border-emerald-400/40 active:scale-95 transition">
+              <i id="playIconSvg" data-lucide="play" class="w-4 h-4 fill-current"></i>
+              <span id="playSkyBtnText">Play Sky</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 24-Hour Ribbon Breakdown -->
+        <div>
+          <div class="flex justify-between text-[11px] font-black text-slate-400 mb-1">
+            <span>12:00 AM Midnight</span>
+            <span id="ribbonSunriseLabel" class="text-amber-300 font-num">🌅 Sunrise: 7:41 AM</span>
+            <span id="ribbonSunsetLabel" class="text-orange-400 font-num">Sunset: 6:44 PM 🌇</span>
+            <span>11:59 PM</span>
+          </div>
+          <div class="relative h-4 rounded-full overflow-hidden border border-slate-700 bg-slate-950 flex shadow-inner">
+            <div id="barPreDawn" class="h-full bg-indigo-950" style="width: 28%;"></div>
+            <div id="barDawn" class="h-full bg-gradient-to-r from-indigo-950 via-purple-700 to-amber-500" style="width: 5%;"></div>
+            <div id="barDaylight" class="h-full bg-gradient-to-r from-amber-400 via-sky-400 to-amber-400" style="width: 44%;"></div>
+            <div id="barDusk" class="h-full bg-gradient-to-r from-amber-500 via-purple-700 to-indigo-950" style="width: 5%;"></div>
+            <div id="barPostDusk" class="h-full bg-indigo-950" style="width: 18%;"></div>
+            <div id="timeRibbonCursor" class="absolute top-0 bottom-0 w-2 bg-white border border-black shadow" style="left: 35.4%;"></div>
+          </div>
+        </div>
+
+        <!-- Scrubber Slider -->
+        <div class="pt-1">
+          <input id="timeRangeSlider" type="range" min="0" max="24" step="0.1" value="8.5" 
+                 class="w-full cursor-pointer appearance-none rounded-lg" oninput="onSliderChange(this.value)">
+        </div>
+
+        <!-- 1st Grade Daily Sky Routine Jumps -->
+        <div>
+          <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider">First Grade Daily Sky Routine:</span>
+          <div class="grid grid-cols-4 sm:grid-cols-7 gap-1.5 mt-1.5">
+            <button onclick="setTime(7.0)" class="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 text-center transition active:scale-95">
+              <div class="text-base">🥞</div>
+              <div class="text-[10px] font-black text-amber-300">7:00 AM</div>
+              <div class="text-[9px] text-slate-400">Breakfast</div>
+            </button>
+            <button onclick="setTime(8.5)" class="p-1.5 rounded-xl border border-purple-500 bg-purple-900/60 hover:bg-purple-800 text-center transition active:scale-95">
+              <div class="text-base">🔔</div>
+              <div class="text-[10px] font-black text-white">8:30 AM</div>
+              <div class="text-[9px] text-purple-200">School Bell</div>
+            </button>
+            <button onclick="setTime(11.5)" class="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 text-center transition active:scale-95">
+              <div class="text-base">🥪</div>
+              <div class="text-[10px] font-black text-amber-300">11:30 AM</div>
+              <div class="text-[9px] text-slate-400">Lunch Noon</div>
+            </button>
+            <button onclick="setTime(13.5)" class="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 text-center transition active:scale-95">
+              <div class="text-base">🏃</div>
+              <div class="text-[10px] font-black text-amber-300">1:30 PM</div>
+              <div class="text-[9px] text-slate-400">Recess</div>
+            </button>
+            <button onclick="setTime(15.0)" class="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 text-center transition active:scale-95">
+              <div class="text-base">🎒</div>
+              <div class="text-[10px] font-black text-amber-300">3:00 PM</div>
+              <div class="text-[9px] text-slate-400">Dismissal</div>
+            </button>
+            <button onclick="setTime(18.0)" class="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 text-center transition active:scale-95">
+              <div class="text-base">🍽️</div>
+              <div class="text-[10px] font-black text-amber-300">6:00 PM</div>
+              <div class="text-[9px] text-slate-400">Dinner</div>
+            </button>
+            <button onclick="setTime(20.5)" class="p-1.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-750 text-center transition active:scale-95">
+              <div class="text-base">🌙</div>
+              <div class="text-[10px] font-black text-indigo-300">8:30 PM</div>
+              <div class="text-[9px] text-slate-400">Bedtime</div>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- RIGHT 4 COLS: SEASONS, WEATHER & NGSS SCIENTIFIC TOOLS -->
+    <div class="lg:col-span-4 flex flex-col space-y-3">
+
+      <!-- 1. DYNAMIC SEASON & WEATHER CONDITION SELECTOR -->
+      <div class="paper-texture rounded-3xl p-3.5 shadow-xl border border-slate-800">
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center space-x-1.5">
+            <span class="text-lg">🎨</span>
+            <h2 class="font-black text-sm text-white">Season & Weather Painter</h2>
+          </div>
+          <span class="text-[10px] font-bold text-purple-300 bg-purple-900/60 px-2 py-0.5 rounded-full">Watercolor FX</span>
+        </div>
+
+        <!-- 4 Seasons Selector Buttons -->
+        <div class="mb-2.5">
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Wasatch Season:</span>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="setSeason('fall')" id="btnSeason-fall" class="season-btn p-1.5 rounded-xl border border-amber-500 bg-amber-900/50 text-white text-xs font-black text-center transition active:scale-95">
+              <span class="text-base block">🍁</span>
+              <span>Fall</span>
+            </button>
+            <button onclick="setSeason('winter')" id="btnSeason-winter" class="season-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95">
+              <span class="text-base block">❄️</span>
+              <span>Winter</span>
+            </button>
+            <button onclick="setSeason('spring')" id="btnSeason-spring" class="season-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95">
+              <span class="text-base block">🌱</span>
+              <span>Spring</span>
+            </button>
+            <button onclick="setSeason('summer')" id="btnSeason-summer" class="season-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95">
+              <span class="text-base block">🌻</span>
+              <span>Summer</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 Weather Condition Buttons -->
+        <div>
+          <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider block mb-1">Sky Weather:</span>
+          <div class="grid grid-cols-4 gap-1.5">
+            <button onclick="setWeather('clear')" id="btnWeather-clear" class="weather-btn p-1.5 rounded-xl border border-sky-400 bg-sky-900/50 text-white text-xs font-black text-center transition active:scale-95">
+              <span class="text-base block">☀️</span>
+              <span>Sunny</span>
+            </button>
+            <button onclick="setWeather('partly')" id="btnWeather-partly" class="weather-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95">
+              <span class="text-base block">⛅</span>
+              <span>Clouds</span>
+            </button>
+            <button onclick="setWeather('overcast')" id="btnWeather-overcast" class="weather-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95">
+              <span class="text-base block">☁️</span>
+              <span>Stormy</span>
+            </button>
+            <button onclick="setWeather('precip')" id="btnWeather-precip" class="weather-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95">
+              <span class="text-base block" id="precipIcon">🌧️</span>
+              <span id="precipLabel">Raining</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. 12-MONTH DAYLIGHT VS NIGHT GRAPH (NGSS 1-ESS1-2) -->
+      <div class="paper-texture rounded-3xl p-3.5 shadow-xl border border-slate-800">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center space-x-1.5">
+            <div class="w-6 h-6 rounded-lg bg-amber-500/20 border border-amber-400/30 flex items-center justify-center text-amber-300">
+              <i data-lucide="bar-chart-2" class="w-3.5 h-3.5"></i>
+            </div>
+            <h2 class="font-black text-sm text-white">Ogden Daylight Patterns</h2>
+          </div>
+          <span class="text-[10px] font-bold text-amber-300 bg-amber-400/10 border border-amber-400/20 px-2 py-0.5 rounded-full">NGSS 1-ESS1-2</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-2 leading-tight">Touch any month to compare day and night hours across the seasons in Ogden!</p>
+
+        <div class="bg-slate-950/80 rounded-2xl p-2 border border-slate-800">
+          <div class="h-24 flex items-end justify-between gap-1 pt-1 pb-1 px-1" id="monthlyBarsContainer"></div>
+          <div class="flex justify-between text-[9px] font-black text-slate-500 px-1 pt-1 border-t border-slate-800">
+            <span>Jan (Winter)</span><span>Jun (Summer Solstice)</span><span>Dec</span>
+          </div>
+        </div>
+
+        <div class="mt-2 bg-purple-950/40 border border-purple-500/30 rounded-2xl p-2 flex items-center justify-between">
+          <div>
+            <div class="flex items-center space-x-1.5">
+              <span id="cardMonthName" class="text-xs font-black text-amber-300">October</span>
+              <span id="cardMonthSeasonTag" class="text-[9px] font-extrabold text-purple-300 bg-purple-900/60 px-1.5 py-0.2 rounded">FALL</span>
+            </div>
+            <div class="text-[11px] text-slate-300 mt-0.5">
+              ☀️ <strong id="cardDaylightHours" class="text-white font-num">11.1 hrs</strong> daylight • <strong id="cardNightHours" class="text-slate-400 font-num">12.9 hrs</strong> night
+            </div>
+            <div class="text-[10px] text-slate-400">
+              🌅 Rise: <span id="cardSunriseTime" class="text-amber-200 font-num">7:41 AM</span> | 🌇 Set: <span id="cardSunsetTime" class="text-orange-300 font-num">6:44 PM</span>
+            </div>
+          </div>
+          <div id="cardSeasonEmoji" class="text-2xl p-1 bg-purple-900/40 rounded-xl border border-purple-400/20">
+            🍁
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. CAMPUS SHADOW STICK LAB -->
+      <div class="paper-texture rounded-3xl p-3.5 shadow-xl border border-slate-800">
+        <div class="flex items-center justify-between mb-1">
+          <div class="flex items-center space-x-1.5">
+            <div class="w-6 h-6 rounded-lg bg-yellow-500/20 border border-yellow-400/30 flex items-center justify-center text-yellow-300">
+              <i data-lucide="ruler" class="w-3.5 h-3.5"></i>
+            </div>
+            <h2 class="font-black text-sm text-white">Campus Shadow Stick Lab</h2>
+          </div>
+          <span class="text-[10px] font-black uppercase text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-full">Interactive</span>
+        </div>
+        <p class="text-[11px] text-slate-400 mb-2">Notice how your shadow points away from the sun and gets short at lunchtime!</p>
+
+        <div class="bg-emerald-950/70 rounded-2xl border border-emerald-700/40 p-2 h-24 relative flex items-center justify-center overflow-hidden shadow-inner">
+          <span class="absolute top-1 text-[9px] font-black text-emerald-400 bg-slate-900/80 px-1.5 rounded">⬆️ North</span>
+          <span class="absolute bottom-1 text-[9px] font-black text-slate-400 bg-slate-900/80 px-1.5 rounded">⬇️ South</span>
+          <span class="absolute left-1 text-[9px] font-black text-slate-400 bg-slate-900/80 px-1.5 rounded">West</span>
+          <span class="absolute right-1 text-[9px] font-black text-slate-400 bg-slate-900/80 px-1.5 rounded">East</span>
+
+          <div class="relative flex flex-col items-center">
+            <div id="playgroundFlagShadow" class="absolute bottom-2 left-1/2 origin-left bg-black/60 blur-[1px] rounded-full transition-all duration-200" 
+                 style="height: 12px; width: 55px; transform: rotate(180deg);"></div>
+            <div class="relative z-10 flex items-start -mb-2">
+              <div class="w-1.5 h-14 bg-slate-200 rounded-t shadow border border-slate-500"></div>
+              <div class="bg-purple-800 text-white text-[9px] font-black px-1.5 py-0.5 rounded-r shadow border-l border-white">
+                WSU 🐾
+              </div>
+            </div>
+            <div class="w-5 h-2.5 bg-slate-700 rounded-full z-10 border border-slate-500"></div>
+          </div>
+
+          <div class="absolute bottom-1 right-2 bg-black/80 px-2 py-0.5 rounded-full border border-white/20 text-[10px] font-black text-amber-300">
+            Ruler: <span id="shadowTapeMeasurement">4 ft 1 in</span>
+          </div>
+        </div>
+
+        <div class="mt-2 text-center">
+          <span id="shadowObservationSentence" class="text-xs font-bold text-amber-300">
+            ☀️ Morning shadow is long and points Northwest!
+          </span>
+        </div>
+      </div>
+
+      <!-- 4. WATERCOLOR MOON PHASE SELECTOR -->
+      <div class="paper-texture rounded-3xl p-3 shadow-xl border border-slate-800">
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center space-x-1.5">
+            <div class="w-6 h-6 rounded-lg bg-indigo-500/20 border border-indigo-400/30 flex items-center justify-center text-indigo-300">
+              <i data-lucide="moon" class="w-3.5 h-3.5"></i>
+            </div>
+            <h2 class="font-black text-sm text-white">Moon Phase & Shape</h2>
+          </div>
+          <span id="moonPhaseTitleTag" class="text-[10px] font-bold text-indigo-300 bg-indigo-400/20 px-2 py-0.5 rounded-full">Waxing Crescent</span>
+        </div>
+
+        <div class="grid grid-cols-4 gap-1.5 mb-2">
+          <button onclick="setMoonPhase('new')" id="mBtn-new" class="moon-btn p-1 rounded-xl border border-slate-800 text-center hover:bg-slate-800 text-xs transition active:scale-95">
+            <span class="text-base block">🌑</span>
+            <span class="text-[9px] font-bold block text-slate-300">New</span>
+          </button>
+          <button onclick="setMoonPhase('crescent')" id="mBtn-crescent" class="moon-btn p-1 rounded-xl border border-purple-500 bg-purple-900/60 text-center text-xs transition active:scale-95">
+            <span class="text-base block">🌙</span>
+            <span class="text-[9px] font-bold block text-purple-200">Crescent</span>
+          </button>
+          <button onclick="setMoonPhase('quarter')" id="mBtn-quarter" class="moon-btn p-1 rounded-xl border border-slate-800 text-center hover:bg-slate-800 text-xs transition active:scale-95">
+            <span class="text-base block">🌓</span>
+            <span class="text-[9px] font-bold block text-slate-300">Half</span>
+          </button>
+          <button onclick="setMoonPhase('full')" id="mBtn-full" class="moon-btn p-1 rounded-xl border border-slate-800 text-center hover:bg-slate-800 text-xs transition active:scale-95">
+            <span class="text-base block">🌕</span>
+            <span class="text-[9px] font-bold block text-slate-300">Full</span>
+          </button>
+        </div>
+
+        <div class="bg-indigo-950/40 border border-indigo-500/20 rounded-xl p-2 text-xs text-indigo-200 font-medium flex items-center space-x-2">
+          <span class="text-base">💡</span>
+          <span id="moonKidAnalogyText" class="text-[11px] leading-tight">"Silver smile": Sunlight hits one curved edge like a glowing banana!</span>
+        </div>
+      </div>
+
+      <!-- 5. WALDO WILDCAT'S SCIENCE CLUE -->
+      <div class="bg-gradient-to-r from-purple-900/90 to-indigo-900/90 rounded-3xl p-3 shadow-xl border border-purple-400/40 flex items-start space-x-2.5">
+        <div class="w-9 h-9 rounded-2xl bg-purple-700 text-white flex-shrink-0 flex items-center justify-center text-xl shadow border border-purple-400/50">
+          🐾
+        </div>
+        <div>
+          <h3 class="text-[10px] font-black uppercase text-amber-300 tracking-wider">Waldo Wildcat's Sky Clue</h3>
+          <p id="firstGradeScienceClue" class="text-xs font-semibold leading-relaxed text-purple-100 mt-0.5">
+            "Look East! In Ogden, the Sun always rises above Mount Ogden and the Wasatch ridges. Early morning shadows stretch way out to the West!"
+          </p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- CLASSROOM FOOTER -->
+  <footer class="max-w-6xl w-full mx-auto mt-3 bg-slate-900/80 backdrop-blur rounded-2xl p-2.5 shadow border border-slate-800 text-center flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400 font-semibold">
+    <div class="flex items-center space-x-2">
+      <span class="text-purple-400 font-black">WEBER STATE UNIVERSITY</span>
+      <span>•</span>
+      <span>Ogden, Utah (41°11' N, 111°56' W)</span>
+    </div>
+    <div class="flex items-center space-x-2">
+      <span class="bg-purple-900/60 text-purple-200 border border-purple-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold">
+        Utah SEEd 1.1.1 & NGSS 1-ESS1-1 / 1-ESS1-2
+      </span>
+      <span class="text-amber-400 font-black">Go Wildcats! 💜</span>
+    </div>
+  </footer>
+
+  <!-- JAVASCRIPT ASTRONOMICAL & WATERCOLOR ENGINE -->
+  <script>
+    const OGDEN_LATITUDE = 41.19;
+    const DEG_TO_RAD = Math.PI / 180;
+    const RAD_TO_DEG = 180 / Math.PI;
+
+    const OGDEN_MONTHS = [
+      { month: "Jan", name: "January", daylight: 9.6, night: 14.4, sunrise: "7:48 AM", sunset: "5:22 PM", dec: -21.0, season: "winter", icon: "❄️" },
+      { month: "Feb", name: "February", daylight: 10.7, night: 13.3, sunrise: "7:22 AM", sunset: "5:58 PM", dec: -13.0, season: "winter", icon: "⛷️" },
+      { month: "Mar", name: "March", daylight: 11.9, night: 12.1, sunrise: "7:38 AM", sunset: "7:32 PM", dec: -2.0, season: "spring", icon: "🌱" },
+      { month: "Apr", name: "April", daylight: 13.3, night: 10.7, sunrise: "6:48 AM", sunset: "8:06 PM", dec: +9.8, season: "spring", icon: "🌷" },
+      { month: "May", name: "May", daylight: 14.5, night: 9.5, sunrise: "6:08 AM", sunset: "8:38 PM", dec: +19.0, season: "spring", icon: "🪁" },
+      { month: "Jun", name: "June", daylight: 15.2, night: 8.8, sunrise: "5:54 AM", sunset: "9:04 PM", dec: +23.44, season: "summer", icon: "🌻" },
+      { month: "Jul", name: "July", daylight: 14.9, night: 9.1, sunrise: "6:11 AM", sunset: "8:58 PM", dec: +21.2, season: "summer", icon: "🏊" },
+      { month: "Aug", name: "August", daylight: 13.8, night: 10.2, sunrise: "6:40 AM", sunset: "8:25 PM", dec: +13.5, season: "summer", icon: "🏕️" },
+      { month: "Sep", name: "September", daylight: 12.4, night: 11.6, sunrise: "7:10 AM", sunset: "7:34 PM", dec: +2.2, season: "fall", icon: "🎒" },
+      { month: "Oct", name: "October", daylight: 11.1, night: 12.9, sunrise: "7:41 AM", sunset: "6:44 PM", dec: -9.5, season: "fall", icon: "🍁" },
+      { month: "Nov", name: "November", daylight: 9.9, night: 14.1, sunrise: "7:17 AM", sunset: "5:07 PM", dec: -19.0, season: "fall", icon: "🦃" },
+      { month: "Dec", name: "December", daylight: 9.3, night: 14.7, sunrise: "7:46 AM", sunset: "5:00 PM", dec: -23.44, season: "winter", icon: "⛄" }
+    ];
+
+    const appState = {
+      timeHours: 8.5,
+      monthIndex: 9,
+      view: 'east',
+      season: 'fall',
+      weather: 'clear',
+      moonPhase: 'crescent',
+      isPlaying: false,
+      playSpeed: 1,
+      animInterval: null
+    };
+
+    function getOgdenSunPosition(hour, monthIdx) {
+      const lat = OGDEN_LATITUDE * DEG_TO_RAD;
+      const dec = OGDEN_MONTHS[monthIdx].dec * DEG_TO_RAD;
+      const hourAngle = (hour - 12.58) * 15 * DEG_TO_RAD;
+
+      const sinAlt = Math.sin(lat) * Math.sin(dec) + Math.cos(lat) * Math.cos(dec) * Math.cos(hourAngle);
+      const altitude = Math.asin(Math.max(-1, Math.min(1, sinAlt))) * RAD_TO_DEG;
+
+      const cosAlt = Math.cos(altitude * DEG_TO_RAD);
+      let azimuth = 180;
+      if (cosAlt > 0.001) {
+        const cosAz = (Math.sin(dec) - Math.sin(lat) * sinAlt) / (Math.cos(lat) * cosAlt);
+        let az = Math.acos(Math.max(-1, Math.min(1, cosAz))) * RAD_TO_DEG;
+        if (Math.sin(hourAngle) > 0) az = 360 - az;
+        azimuth = (az + 180) % 360;
+      }
+      return { altitude, azimuth };
+    }
+
+    function getOgdenMoonPosition(sunCoords, phase) {
+      let offsetAngle = 0;
+      if (phase === 'new') offsetAngle = 0;
+      else if (phase === 'crescent') offsetAngle = 45;
+      else if (phase === 'quarter') offsetAngle = 90;
+      else if (phase === 'full') offsetAngle = 180;
+
+      const moonHour = (appState.timeHours + (offsetAngle / 15)) % 24;
+      return getOgdenSunPosition(moonHour, 2);
+    }
+
+    function projectToSkyCanvas(azimuth, altitude) {
+      const canvasW = 800;
+      const horizonY = 320;
+
+      let centerAz = 90;
+      if (appState.view === 'east') centerAz = 90;
+      else if (appState.view === 'south') centerAz = 180;
+      else if (appState.view === 'west') centerAz = 270;
+      else if (appState.view === 'north') centerAz = 0;
+
+      let diff = azimuth - centerAz;
+      while (diff < -180) diff += 360;
+      while (diff > 180) diff -= 360;
+
+      const fov = 150;
+      const x = (diff / (fov / 2)) * (canvasW / 2) + (canvasW / 2);
+      const clampedAlt = Math.max(-15, Math.min(90, altitude));
+      const y = horizonY - (clampedAlt / 90) * (horizonY - 40);
+      const scale = 0.9 + Math.max(0, altitude / 90) * 0.35;
+
+      return { x, y, scale };
+    }
+
+    function renderSky() {
+      const sun = getOgdenSunPosition(appState.timeHours, appState.monthIndex);
+      const moon = getOgdenMoonPosition(sun, appState.moonPhase);
+
+      updateWatercolorSkyAtmosphere(sun.altitude);
+      updateCelestialPositions(sun, moon);
+      drawSunArcTrajectory();
+      updateMoonShadowTerminator();
+      updatePlaygroundShadowStick(sun);
+      updateDayNightRibbon();
+      updateDashboardLabels(sun);
+      renderWeatherFX();
+    }
+
+    function updateWatercolorSkyAtmosphere(altitude) {
+      const skyRect = document.getElementById('skyRect');
+      const starsLayer = document.getElementById('starsLayer');
+      const phaseEmoji = document.getElementById('skyPhaseEmoji');
+      const phaseLabel = document.getElementById('skyPhaseLabel');
+      const altLabel = document.getElementById('sunAltitudeLabel');
+
+      if (!skyRect || !starsLayer) return;
+
+      altLabel.innerText = `Sun Alt: ${Math.round(altitude)}°`;
+
+      if (appState.weather === 'overcast') {
+        skyRect.setAttribute('fill', 'url(#skyGradOvercast)');
+        starsLayer.style.opacity = '0';
+        phaseEmoji.innerText = '☁️';
+        phaseLabel.innerText = 'Overcast Storm';
+        return;
+      }
+
+      if (altitude > 15) {
+        skyRect.setAttribute('fill', 'url(#skyGradDay)');
+        starsLayer.style.opacity = '0';
+        phaseEmoji.innerText = '☀️';
+        phaseLabel.innerText = 'Broad Daylight';
+      } else if (altitude > 0) {
+        skyRect.setAttribute('fill', 'url(#skyGradSunset)');
+        starsLayer.style.opacity = '0.15';
+        phaseEmoji.innerText = '🌅';
+        phaseLabel.innerText = 'Alpenglow';
+      } else if (altitude > -8) {
+        skyRect.setAttribute('fill', 'url(#skyGradSunset)');
+        starsLayer.style.opacity = '0.55';
+        phaseEmoji.innerText = '🌆';
+        phaseLabel.innerText = 'Twilight';
+      } else {
+        skyRect.setAttribute('fill', 'url(#skyGradNight)');
+        starsLayer.style.opacity = '1';
+        phaseEmoji.innerText = '🌌';
+        phaseLabel.innerText = 'Starlit Night';
+      }
+    }
+
+    function updateCelestialPositions(sun, moon) {
+      const sunGrp = document.getElementById('sunDiscGroup');
+      const moonGrp = document.getElementById('moonDiscGroup');
+      if (!sunGrp || !moonGrp) return;
+
+      const sun2D = projectToSkyCanvas(sun.azimuth, sun.altitude);
+      const moon2D = projectToSkyCanvas(moon.azimuth, moon.altitude);
+
+      sunGrp.setAttribute('transform', `translate(${sun2D.x}, ${sun2D.y}) scale(${sun2D.scale})`);
+      moonGrp.setAttribute('transform', `translate(${moon2D.x}, ${moon2D.y}) scale(${moon2D.scale})`);
+
+      sunGrp.style.opacity = (sun.altitude < -3 || appState.weather === 'overcast') ? '0' : '1';
+      moonGrp.style.opacity = (moon.altitude < -3 || (sun.altitude > 20 && appState.moonPhase === 'new')) ? '0' : '1';
+    }
+
+    function drawSunArcTrajectory() {
+      const mount = document.getElementById('sunPathVisualizer');
+      if (!mount) return;
+
+      let pathD = '';
+      let hasStarted = false;
+
+      for (let h = 4.5; h <= 20.5; h += 0.25) {
+        const coords = getOgdenSunPosition(h, appState.monthIndex);
+        const pt = projectToSkyCanvas(coords.azimuth, coords.altitude);
+        if (pt.x >= -30 && pt.x <= 830 && pt.y <= 380) {
+          if (!hasStarted) {
+            pathD += `M ${pt.x} ${pt.y}`;
+            hasStarted = true;
+          } else {
+            pathD += ` L ${pt.x} ${pt.y}`;
+          }
+        }
+      }
+      mount.innerHTML = `<path d="${pathD}" fill="none" stroke="#fde047" stroke-width="2.5" stroke-dasharray="6,6" opacity="0.75"/>`;
+    }
+
+    function updateMoonShadowTerminator() {
+      const path = document.getElementById('moonShadowPath');
+      if (!path) return;
+      const r = 20;
+      switch (appState.moonPhase) {
+        case 'new':
+          path.setAttribute('d', `M 0 -${r} A ${r} ${r} 0 1 0 0 ${r} A ${r} ${r} 0 1 0 0 -${r} Z`);
+          break;
+        case 'crescent':
+          path.setAttribute('d', `M 0 -${r} A ${r} ${r} 0 0 0 0 ${r} A 10 ${r} 0 0 1 0 -${r} Z`);
+          break;
+        case 'quarter':
+          path.setAttribute('d', `M 0 -${r} A ${r} ${r} 0 0 0 0 ${r} Z`);
+          break;
+        case 'full':
+          path.setAttribute('d', '');
+          break;
+      }
+    }
+
+    function renderWeatherFX() {
+      const cloudsLayer = document.getElementById('cloudPuffsGroup');
+      const particlesLayer = document.getElementById('weatherParticlesLayer');
+      if (!cloudsLayer || !particlesLayer) return;
+
+      if (appState.weather === 'clear') {
+        cloudsLayer.innerHTML = '';
+      } else if (appState.weather === 'partly') {
+        cloudsLayer.innerHTML = `
+          <g fill="#ffffff" opacity="0.65">
+            <ellipse cx="180" cy="90" rx="90" ry="28"/>
+            <circle cx="150" cy="75" r="32"/>
+            <circle cx="210" cy="75" r="36"/>
+            <ellipse cx="620" cy="110" rx="100" ry="32"/>
+            <circle cx="580" cy="95" r="38"/>
+          </g>
+        `;
+      } else {
+        cloudsLayer.innerHTML = `
+          <g fill="#334155" opacity="0.8">
+            <ellipse cx="200" cy="90" rx="240" ry="60"/>
+            <ellipse cx="600" cy="85" rx="260" ry="65"/>
+            <ellipse cx="400" cy="70" rx="300" ry="60"/>
+          </g>
+        `;
+      }
+
+      if (appState.weather === 'precip') {
+        particlesLayer.style.opacity = '1';
+        let phtml = '';
+        const isSnow = (appState.season === 'winter');
+
+        for (let i = 0; i < 45; i++) {
+          const x = (i * 20 + Math.sin(i * 4) * 15) % 800;
+          const y = (i * 12 + (i % 7) * 40) % 400 + 40;
+          if (isSnow) {
+            phtml += `<circle cx="${x}" cy="${y}" r="${Math.random() * 2.5 + 1.5}" fill="#ffffff" opacity="0.85"/>`;
+          } else {
+            phtml += `<line x1="${x}" y1="${y}" x2="${x - 4}" y2="${y + 12}" stroke="#7dd3fc" stroke-width="1.8" opacity="0.75"/>`;
+          }
+        }
+        particlesLayer.innerHTML = phtml;
+      } else {
+        particlesLayer.style.opacity = '0';
+        particlesLayer.innerHTML = '';
+      }
+    }
+
+    function updatePlaygroundShadowStick(sun) {
+      const shadow = document.getElementById('playgroundFlagShadow');
+      const obsText = document.getElementById('shadowObservationSentence');
+      const tape = document.getElementById('shadowTapeMeasurement');
+      if (!shadow || !obsText || !tape) return;
+
+      if (sun.altitude <= 0 || appState.weather === 'overcast') {
+        shadow.style.opacity = '0';
+        obsText.innerText = (sun.altitude <= 0) 
+          ? "🌙 Nighttime in Ogden: No sun shadow right now!" 
+          : "☁️ Overcast sky: Diffused light makes shadows disappear!";
+        tape.innerText = "0 ft";
+        return;
+      }
+
+      shadow.style.opacity = '0.7';
+
+      const clampedAlt = Math.max(5, sun.altitude);
+      const shadowLenPx = Math.min(130, Math.max(14, 46 / Math.tan(clampedAlt * DEG_TO_RAD)));
+      shadow.style.width = `${shadowLenPx}px`;
+
+      const shadowAngle = (sun.azimuth + 180) % 360;
+      shadow.style.transform = `rotate(${shadowAngle - 90}deg)`;
+
+      const totalFeet = 6 / Math.tan(clampedAlt * DEG_TO_RAD);
+      const ft = Math.floor(totalFeet);
+      const inches = Math.round((totalFeet - ft) * 12);
+      tape.innerText = `${ft} ft ${inches} in`;
+
+      let dirName = "North";
+      if (shadowAngle > 337.5 || shadowAngle <= 22.5) dirName = "North";
+      else if (shadowAngle <= 67.5) dirName = "Northeast";
+      else if (shadowAngle <= 112.5) dirName = "East";
+      else if (shadowAngle <= 157.5) dirName = "Southeast";
+      else if (shadowAngle <= 202.5) dirName = "South";
+      else if (shadowAngle <= 247.5) dirName = "Southwest";
+      else if (shadowAngle <= 292.5) dirName = "West";
+      else dirName = "Northwest";
+
+      if (sun.altitude > 60) {
+        obsText.innerText = `☀️ High Noon! Shadow is super SHORT and points ${dirName}!`;
+      } else if (sun.altitude > 28) {
+        obsText.innerText = `☀️ Recess time! Medium shadow points ${dirName}.`;
+      } else {
+        obsText.innerText = `🌅 Low Sun! Look how LONG the shadow stretches toward ${dirName}!`;
+      }
+    }
+
+    function updateDayNightRibbon() {
+      const mData = OGDEN_MONTHS[appState.monthIndex];
+      const srParts = mData.sunrise.split(" ")[0].split(":");
+      const srHour = parseInt(srParts[0]) + parseInt(srParts[1]) / 60;
+      const ssParts = mData.sunset.split(" ")[0].split(":");
+      const ssHour = (parseInt(ssParts[0]) + 12) + parseInt(ssParts[1]) / 60;
+
+      const dawnStart = Math.max(0, srHour - 0.7);
+      const duskEnd = Math.min(24, ssHour + 0.7);
+
+      const pPre = (dawnStart / 24) * 100;
+      const pDawn = ((srHour - dawnStart) / 24) * 100;
+      const pDay = ((ssHour - srHour) / 24) * 100;
+      const pDusk = ((duskEnd - ssHour) / 24) * 100;
+      const pPost = ((24 - duskEnd) / 24) * 100;
+
+      const bPre = document.getElementById('barPreDawn');
+      if (bPre) {
+        bPre.style.width = `${pPre}%`;
+        document.getElementById('barDawn').style.width = `${pDawn}%`;
+        document.getElementById('barDaylight').style.width = `${pDay}%`;
+        document.getElementById('barDusk').style.width = `${pDusk}%`;
+        document.getElementById('barPostDusk').style.width = `${pPost}%`;
+        document.getElementById('timeRibbonCursor').style.left = `${(appState.timeHours / 24) * 100}%`;
+        document.getElementById('ribbonSunriseLabel').innerText = `🌅 Sunrise: ${mData.sunrise}`;
+        document.getElementById('ribbonSunsetLabel').innerText = `Sunset: ${mData.sunset} 🌇`;
+      }
+    }
+
+    function updateDashboardLabels(sun) {
+      const clockText = document.getElementById('digitalClockTime');
+      const badge = document.getElementById('routineBadgeText');
+      const emojiBadge = document.getElementById('clockEmojiBadge');
+      const activityDesc = document.getElementById('kidActivityDesc');
+      const clue = document.getElementById('firstGradeScienceClue');
+
+      if (!clockText) return;
+
+      const hrs = Math.floor(appState.timeHours);
+      const mins = Math.floor((appState.timeHours - hrs) * 60);
+      const period = hrs >= 12 ? 'PM' : 'AM';
+      const displayHours = hrs % 12 === 0 ? 12 : hrs % 12;
+      const displayMinutes = mins < 10 ? '0' + mins : mins;
+      clockText.innerText = `${displayHours}:${displayMinutes} ${period}`;
+
+      const slider = document.getElementById('timeRangeSlider');
+      if (slider) slider.value = appState.timeHours;
+
+      if (appState.timeHours >= 6.5 && appState.timeHours < 8.2) {
+        badge.innerText = "Morning Breakfast";
+        badge.className = "bg-amber-400/20 text-amber-300 border border-amber-400/30 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "🥞";
+        activityDesc.innerText = "Eating breakfast and packing your backpack for school!";
+        clue.innerText = `"Look East towards Mount Ogden! In Ogden, the Sun always rises over the Wasatch mountain crest. Morning shadows stretch far West!"`;
+      } else if (appState.timeHours >= 8.2 && appState.timeHours < 11.2) {
+        badge.innerText = "Morning Bell";
+        badge.className = "bg-sky-400/20 text-sky-300 border border-sky-400/30 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "🔔";
+        activityDesc.innerText = "Reading, phonics, and math games with your teacher!";
+        clue.innerText = `"As morning passes, the Sun climbs higher into the southern sky over the Stewart Bell Tower, and shadows shrink!"`;
+      } else if (appState.timeHours >= 11.2 && appState.timeHours < 13.0) {
+        badge.innerText = "Lunch Noon";
+        badge.className = "bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "🥪";
+        activityDesc.innerText = "Lunchtime and outdoor recess fun on the playground!";
+        const m = OGDEN_MONTHS[appState.monthIndex];
+        clue.innerText = `"Solar Noon in Ogden! The sun reaches its highest point directly South. In ${m.name}, it climbs to ${Math.round(sun.altitude)}° high! Your shadow is at its shortest of the day!"`;
+      } else if (appState.timeHours >= 13.0 && appState.timeHours < 15.5) {
+        badge.innerText = "Recess & Learning";
+        badge.className = "bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "🏃";
+        activityDesc.innerText = "Playing outside, science experiments, and library books.";
+        clue.innerText = `"The Sun is traveling West toward the Great Salt Lake! Look at the flagpole shadow—it flipped to point East toward Mount Ogden!"`;
+      } else if (appState.timeHours >= 15.5 && appState.timeHours < 18.0) {
+        badge.innerText = "Afternoon Play";
+        badge.className = "bg-purple-400/20 text-purple-300 border border-purple-400/30 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "🎒";
+        activityDesc.innerText = "Walking home, after-school snacks, and bike riding.";
+        clue.innerText = `"The sun is sinking lower in the West! Shadows are stretching super long again across the street!"`;
+      } else if (appState.timeHours >= 18.0 && appState.timeHours < 20.2) {
+        badge.innerText = "Dinner & Sunset";
+        badge.className = "bg-orange-400/20 text-orange-300 border border-orange-400/30 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "🍽️";
+        activityDesc.innerText = "Family dinner and watching the golden sunset colors!";
+        clue.innerText = `"Look West! The sun is setting behind Antelope Island and the Great Salt Lake. Pink alpenglow lights up the mountains behind us!"`;
+      } else {
+        badge.innerText = "Starlit Bedtime";
+        badge.className = "bg-indigo-950 text-indigo-300 border border-indigo-700 font-black text-xs px-2.5 py-0.5 rounded-full";
+        emojiBadge.innerText = "😴";
+        activityDesc.innerText = "Brushing teeth and listening to a cozy bedtime story.";
+        clue.innerText = `"Good night Wildcats! The sun is shining on the opposite side of Earth now. Look up at the stars and the ${appState.moonPhase} moon shining in Ogden's sky!"`;
+      }
+    }
+
+    function renderMonthlyGraph() {
+      const container = document.getElementById('monthlyBarsContainer');
+      if (!container) return;
+      let html = '';
+
+      OGDEN_MONTHS.forEach((data, index) => {
+        const isSelected = index === appState.monthIndex;
+        const dayPct = Math.round((data.daylight / 24) * 100);
+        const nightPct = 100 - dayPct;
+        const activeRing = isSelected ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-slate-900 scale-105' : 'opacity-75 hover:opacity-100';
+
+        html += `
+          <div onclick="selectMonth(${index})" 
+               title="${data.name}: ${data.daylight}h daylight, ${data.night}h night"
+               class="flex-1 flex flex-col items-center cursor-pointer transition-all duration-200 ${activeRing}">
+            <div class="w-full flex flex-col h-20 rounded-lg overflow-hidden border border-slate-700 bg-slate-950">
+              <div class="w-full bg-indigo-950 flex items-center justify-center text-[7px] text-slate-400" 
+                   style="height: ${nightPct}%;"></div>
+              <div class="w-full bg-gradient-to-t from-amber-500 to-yellow-300 flex items-center justify-center text-[7px] font-black text-amber-950" 
+                   style="height: ${dayPct}%;">
+                <span class="hidden sm:inline">${Math.round(data.daylight)}h</span>
+              </div>
+            </div>
+            <span class="text-[8px] sm:text-[9px] font-black mt-1 ${isSelected ? 'text-amber-300 font-bold' : 'text-slate-400'}">
+              ${data.month}
+            </span>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+      updateMonthCard();
+    }
+
+    function selectMonth(index) {
+      appState.monthIndex = index;
+      appState.season = OGDEN_MONTHS[index].season;
+      updateSeasonButtons();
+      renderMonthlyGraph();
+      renderSky();
+    }
+
+    function updateMonthCard() {
+      const m = OGDEN_MONTHS[appState.monthIndex];
+      const nameEl = document.getElementById('cardMonthName');
+      if (!nameEl) return;
+      nameEl.innerText = m.name;
+      document.getElementById('cardMonthSeasonTag').innerText = m.season.toUpperCase();
+      document.getElementById('cardDaylightHours').innerText = `${m.daylight} hrs`;
+      document.getElementById('cardNightHours').innerText = `${m.night} hrs`;
+      document.getElementById('cardSunriseTime').innerText = m.sunrise;
+      document.getElementById('cardSunsetTime').innerText = m.sunset;
+      document.getElementById('cardSeasonEmoji').innerText = m.icon;
+    }
+
+    function setView(viewName) {
+      appState.view = viewName;
+      document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.className = "view-btn px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1 bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-750 transition active:scale-95";
+      });
+      const activeBtn = document.getElementById(`btnView-${viewName}`);
+      if (activeBtn) {
+        activeBtn.className = "view-btn px-2.5 py-1.5 rounded-xl text-xs font-black flex items-center justify-center space-x-1 bg-purple-600 text-white shadow border border-purple-400 transition active:scale-95";
+      }
+
+      ['east', 'south', 'west', 'north'].forEach(v => {
+        const el = document.getElementById(`viewSkyline-${v}`);
+        if (el) {
+          if (v === viewName) {
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+          } else {
+            el.style.opacity = '0';
+            el.style.pointerEvents = 'none';
+          }
+        }
+      });
+
+      const title = document.getElementById('viewLocationTitle');
+      const leftCard = document.getElementById('groundLeftCardinal');
+      const rightCard = document.getElementById('groundRightCardinal');
+
+      if (viewName === 'east') {
+        title.innerText = "East • Mount Ogden (9,572 ft) & Hillside 'W'";
+        leftCard.innerText = "🌄 NORTHEAST (Ogden Canyon)";
+        rightCard.innerText = "SOUTHEAST (Wasatch Bench) 🌲";
+      } else if (viewName === 'south') {
+        title.innerText = "South • WSU Stewart Bell Tower & Campus Walkway";
+        leftCard.innerText = "🌅 EAST (Elizabeth Hall)";
+        rightCard.innerText = "WEST (Davis County) 🌇";
+      } else if (viewName === 'west') {
+        title.innerText = "West • Transit Canopy, Valley & Great Salt Lake";
+        leftCard.innerText = "SOUTHWEST (Antelope Island)";
+        rightCard.innerText = "NORTHWEST (Promontory Point) 🌇";
+      } else if (viewName === 'north') {
+        title.innerText = "North • McKay Education Building Plaza";
+        leftCard.innerText = "NORTHWEST (Ben Lomond Peak)";
+        rightCard.innerText = "NORTHEAST (North Ogden Pass) 🏔️";
+      }
+
+      renderSky();
+    }
+
+    function setSeason(seasonName) {
+      appState.season = seasonName;
+      updateSeasonButtons();
+      
+      if (seasonName === 'winter') appState.monthIndex = 11;
+      else if (seasonName === 'spring') appState.monthIndex = 3;
+      else if (seasonName === 'summer') appState.monthIndex = 6;
+      else if (seasonName === 'fall') appState.monthIndex = 9;
+
+      renderMonthlyGraph();
+      renderSky();
+    }
+
+    function updateSeasonButtons() {
+      ['fall', 'winter', 'spring', 'summer'].forEach(s => {
+        const b = document.getElementById(`btnSeason-${s}`);
+        if (!b) return;
+        if (s === appState.season) {
+          b.className = "season-btn p-1.5 rounded-xl border border-amber-400 bg-amber-900/60 text-white text-xs font-black text-center transition active:scale-95";
+        } else {
+          b.className = "season-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95";
+        }
+      });
+
+      const precipIcon = document.getElementById('precipIcon');
+      const precipLabel = document.getElementById('precipLabel');
+      if (precipIcon && precipLabel) {
+        if (appState.season === 'winter') {
+          precipIcon.innerText = "❄️";
+          precipLabel.innerText = "Snowing";
+        } else {
+          precipIcon.innerText = "🌧️";
+          precipLabel.innerText = "Raining";
+        }
+      }
+    }
+
+    function setWeather(weatherKey) {
+      appState.weather = weatherKey;
+      ['clear', 'partly', 'overcast', 'precip'].forEach(w => {
+        const b = document.getElementById(`btnWeather-${w}`);
+        if (!b) return;
+        if (w === weatherKey) {
+          b.className = "weather-btn p-1.5 rounded-xl border border-sky-400 bg-sky-900/60 text-white text-xs font-black text-center transition active:scale-95";
+        } else {
+          b.className = "weather-btn p-1.5 rounded-xl border border-slate-800 bg-slate-850 text-slate-300 text-xs font-black text-center hover:bg-slate-800 transition active:scale-95";
+        }
+      });
+      renderSky();
+    }
+
+    function setMoonPhase(phaseKey) {
+      appState.moonPhase = phaseKey;
+      ['new', 'crescent', 'quarter', 'full'].forEach(p => {
+        const b = document.getElementById(`mBtn-${p}`);
+        if (!b) return;
+        if (p === phaseKey) {
+          b.className = "moon-btn p-1 rounded-xl border border-purple-500 bg-purple-900/70 text-center text-xs transition active:scale-95";
+        } else {
+          b.className = "moon-btn p-1 rounded-xl border border-slate-800 text-center hover:bg-slate-800 text-xs transition active:scale-95";
+        }
+      });
+
+      const names = { new: "New Moon", crescent: "Waxing Crescent", quarter: "Half Moon", full: "Full Moon" };
+      const analogies = {
+        new: "The Moon is between Earth and Sun—its sunny face is turned away from us!",
+        crescent: '"Silver smile": Sunlight hits one curved edge like a glowing banana!',
+        quarter: '"Half pancake": Half the Moon is lit up in the evening sky!',
+        full: '"Glowing basketball": A round bright circle shines across Mount Ogden all night!'
+      };
+
+      document.getElementById('moonPhaseTitleTag').innerText = names[phaseKey];
+      document.getElementById('moonKidAnalogyText').innerText = analogies[phaseKey];
+      renderSky();
+    }
+
+    function onSliderChange(val) {
+      appState.timeHours = parseFloat(val);
+      renderSky();
+    }
+
+    function setTime(hr) {
+      appState.timeHours = hr;
+      const slider = document.getElementById('timeRangeSlider');
+      if (slider) slider.value = hr;
+      renderSky();
+    }
+
+    function setPlaySpeed(spd) {
+      appState.playSpeed = spd;
+      [1, 10, 60].forEach(s => {
+        const b = document.getElementById(`spdBtn-${s}`);
+        if (s === spd) {
+          b.className = "px-2 py-1 text-xs font-black rounded-xl bg-purple-600 text-white";
+        } else {
+          b.className = "px-2 py-1 text-xs font-black rounded-xl text-slate-400 hover:text-white";
+        }
+      });
+    }
+
+    function togglePlayAnimation() {
+      const btn = document.getElementById('btnPlaySky');
+      const text = document.getElementById('playSkyBtnText');
+      const icon = document.getElementById('playIconSvg');
+
+      if (appState.isPlaying) {
+        clearInterval(appState.animInterval);
+        appState.isPlaying = false;
+        text.innerText = "Play Sky";
+        btn.className = "bg-emerald-600 hover:bg-emerald-500 text-white font-black px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center space-x-1.5 shadow-lg border border-emerald-400/40 active:scale-95 transition";
+        icon.setAttribute('data-lucide', 'play');
+      } else {
+        appState.isPlaying = true;
+        text.innerText = "Pause Sky";
+        btn.className = "bg-amber-600 hover:bg-amber-500 text-white font-black px-4 py-2.5 rounded-2xl text-xs sm:text-sm flex items-center space-x-1.5 shadow-lg border border-amber-400/40 active:scale-95 transition";
+        icon.setAttribute('data-lucide', 'pause');
+
+        appState.animInterval = setInterval(() => {
+          const step = 0.05 * appState.playSpeed;
+          appState.timeHours = (appState.timeHours + step) % 24;
+          renderSky();
+        }, 50);
+      }
+      lucide.createIcons();
+    }
+
+    function syncOgdenLiveTime() {
+      const ogdenNow = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Denver" }));
+      const currentDecimalHours = ogdenNow.getHours() + (ogdenNow.getMinutes() / 60);
+
+      if (appState.isPlaying) togglePlayAnimation();
+
+      setTime(currentDecimalHours);
+      appState.monthIndex = ogdenNow.getMonth();
+      appState.season = OGDEN_MONTHS[appState.monthIndex].season;
+      updateSeasonButtons();
+      renderMonthlyGraph();
+      renderSky();
+    }
+
+    function initStarDots() {
+      const mount = document.getElementById('starDotsGroup');
+      if (!mount) return;
+      let dotsHtml = '';
+      for (let i = 0; i < 65; i++) {
+        const cx = Math.random() * 800;
+        const cy = Math.random() * 240;
+        const r = Math.random() * 1.6 + 0.8;
+        dotsHtml += `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#ffffff" opacity="${Math.random() * 0.7 + 0.3}"/>`;
+      }
+      mount.innerHTML = dotsHtml;
+    }
+
+    window.onload = function() {
+      initStarDots();
+      renderMonthlyGraph();
+      if (window.lucide) lucide.createIcons();
+      setView('east');
+      setSeason('fall');
+      renderSky();
+
+      window.addEventListener('resize', () => {
+        renderSky();
+      });
+    };
+  </script>
+</body>
+</html>
